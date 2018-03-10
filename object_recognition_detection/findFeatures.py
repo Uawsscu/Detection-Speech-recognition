@@ -71,5 +71,5 @@ clf = LinearSVC()
 clf.fit(im_features, np.array(image_classes))
 # Save the SVM
 
-#joblib.dump((clf, training_names, stdSlr, k, voc), "bof.pkl", compress=3)
+joblib.dump((clf, training_names, stdSlr, k, voc), "train.pkl", compress=3)
     

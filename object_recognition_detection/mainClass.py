@@ -48,7 +48,7 @@ category_index = label_map_util.create_category_index(categories)
 
 
 def detectBOW():
-    clf, classes_names, stdSlr, k, voc = joblib.load("bof.pkl")
+    clf, classes_names, stdSlr, k, voc = joblib.load("train.pkl")
     print "Ready!! Yessss"
     cap = cv2.VideoCapture(1)
     x=y=xh=yh=1
