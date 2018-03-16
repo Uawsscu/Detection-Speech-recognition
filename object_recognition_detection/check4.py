@@ -2,7 +2,7 @@ from textblob import TextBlob
 #from capture import *
 #from Kinect_detect import *
 
-
+print "ss"
 #>>>>>>>>>>>>>>>>>> PASS ThisIs! <<<<<<<<<<<<<<<<<<
 def get_object_train(text):
     # CUT "END"
