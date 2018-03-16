@@ -7,6 +7,7 @@ import os
 from sklearn.svm import LinearSVC
 from sklearn.externals import joblib
 from scipy.cluster.vq import *
+import freenect
 
 #image_path = "/home/uawsscu/PycharmProjects/sift3/B-O-W/dataset/test/dall/dall7.jpg"
 
@@ -45,19 +46,23 @@ category_index = label_map_util.create_category_index(categories)
 
 
 #################################  DETECTIONS && PREDICTION ########################################
-
+def get_video():
+    array, _ = freenect.sync_get_video()
+    array = cv2.cvtColor(array, cv2.COLOR_RGB2BGR)
+    return array
 
 def detectBOW():
     clf, classes_names, stdSlr, k, voc = joblib.load("train.pkl")
     print "Ready!! Yessss"
-    cap = cv2.VideoCapture(1)
+   # cap = cv2.VideoCapture(1)
     x=y=xh=yh=1
     font = cv2.FONT_HERSHEY_SCRIPT_COMPLEX
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
             ret = True
             while (ret):
-                ret, image_np = cap.read()
+               # ret, image_np = cap.read()
+                image_np = get_video()
                 image_np_expanded = np.expand_dims(image_np, axis=0)
                 image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
                 boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
@@ -206,5 +211,5 @@ def capture():
 
 
 #capture()
-detectBOW()
+#detectBOW()
 
