@@ -34,7 +34,7 @@ def search_object_Train(name):
         cur = con.cursor()
         #cur.execute('SELECT * FROM object_Train WHERE name=?',(name,))
         try :
-            cur.execute("SELECT " + "ID" + " FROM object_Train where " + "name" + "=?", (name,))
+            cur.execute("SELECT " + "ID" + " FROM obj_ALL where " + "name" + "=?", (name,))
             rows = cur.fetchone()
             for element in rows:
                 return element
@@ -109,7 +109,7 @@ remove_Buff_Detect(1)
 #insert_Buff_Detect("ball")
 #print search_Buff_Detect(1)
 #print search_object_Train("ball")
-lenObj = int(lenDB("Corpus_Main.db", "SELECT * FROM obj_ALL"))
+#lenObj = int(lenDB("Corpus_Main.db", "SELECT * FROM obj_ALL"))
 #print lenObj
-insert_object_Train("teddy", int(lenObj+1))
+#insert_object_Train("teddy", int(lenObj+1))
 #create_Table("Corpus_Main.db","'''CREATE TABLE obj_ALL(name varchar(50) ,ID INTEGER primary key)'''")

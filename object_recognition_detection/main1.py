@@ -199,11 +199,12 @@ def detectBOW():
 
 
 def capture(namePath,obj_name):
+    print "CAPPP"
     import time
     start = time.time()
     time.clock()
     elapsed = 0
-    seconds = 200  # 20 S.
+    seconds = 20  # 20 S.
     cap = cv2.VideoCapture(1)
     # Running the tensorflow session
     with detection_graph.as_default():
@@ -259,18 +260,21 @@ def capture(namePath,obj_name):
                         print "no image PASS"
 
                 if (elapsed >= seconds):
+                    cv2.destroyAllWindows()
                     break
 
                 if cv2.waitKey(25) & 0xFF == ord('q'):
                     cv2.destroyAllWindows()
                     break
+    cap.release()
+    cv2.destroyAllWindows()
 
 
 ########################################################################################################
 ########################################## SAVE MODEL ##################################################
 
 def save_model():
-    train_path = "/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/dataset/train"
+    train_path = "/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic"
     training_names = os.listdir(train_path)
     image_paths = []
     image_classes = []  ## 00000,111111,2222,33333
@@ -330,6 +334,7 @@ def save_model():
     # Save the SVM
 
     joblib.dump((clf, training_names, stdSlr, k, voc), "train.pkl", compress=3)
+    print "SAVE MODEL"
 
 
 ################################################### MAIN ##################################################
@@ -352,6 +357,7 @@ while True:
                     strDecode = decoder.hyp().hypstr
 
                     if strDecode != '':
+                        print strDecode
                         # >>>>>>> END <<<<<<<<<<<<
                         if strDecode[-3:] == 'end' and strDecode[:9] == "this is a" :
                             print "\n------------------------------------------"
@@ -360,14 +366,16 @@ while True:
                             obj_name = get_object_train(strDecode)  # sentence to word
                             print "Speech : ", obj_name
                             # create folder
-                            dataset_Path = r'/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/dataset/train/' + obj_name
-                            p="/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/dataset/train/"+ obj_name+"/"
+                            dataset_Path = r'/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/' + obj_name
+                            p="/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/"+ obj_name+"/"
 
                             if not os.path.exists(dataset_Path):
+                                print dataset_Path
                                 os.makedirs(dataset_Path)
-                                capture(p,obj_name)  #capture image for train
+                                capture(p,obj_name)  #capture image for train >> SAVE IMAGE
                                 lenObj = int(lenDB("Corpus_Main.db", "SELECT * FROM obj_ALL"))  # count ROWs
-                                insert_object_Train(obj_name, lenObj + 1)  # check Found objects?
+                                insert_object_Train(obj_name, int(lenObj + 1))  # check Found objects?
+
 
                         # >>>>>>> ARM <<<<<<<<<<<<
                         elif STPindex == 0 and strDecode[:14] == 'this is how to' and strDecode[-4:] == "step":

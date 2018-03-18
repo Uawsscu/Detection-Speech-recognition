@@ -6,15 +6,18 @@
 
 grammar sentence;
 
-public <move> = merry one | <b> | move to left | [hi][jerry] <command> | <question> | turn on | turn off | <train> | [test][is] <control> |call [back][step];
+public <move> =  <obj> | turn off | merry one | <train> | <b> | move to left | [hi][jerry] <command> | <question> | [test][is] <control> |call [back][step];
 
 <control> = [this][is][ how][ to] <verb> <obj> <number> [step] |[this][is][ how to] <etc> <number> [step] ;
 
-<train> = [this] [is] [a] <obj> [end] ;
+<train> =  this is [a] <obj> [end] ;
 <command> =  <verb> <obj> | <etc> ;
 <question> = [do] [you] [know] a <obj> ;
 
-<obj> =  [sports ball] | glass  | remote | cup | tv | teddy bear| bottle ;
+<obj> = <n> | <color> <n>;
+
+<color> = green | red | blue | brown | black | orange | pink ;
+<n> =  sports ball | glass  | remote | cup | tv | teddy | bottle | green bottle;
 <verb> = grab | touch | pick ;
 <number> = one | two | three | five | four;
 <etc> = move the <obj> to the left | right ;
