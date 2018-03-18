@@ -450,3 +450,4 @@ while True:
 decoder.end_utt()
 print('An Error occured :', decoder.hyp().hypstr)
 
+print "OK"
