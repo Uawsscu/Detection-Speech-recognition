@@ -119,17 +119,23 @@ def get_video():
 
 
 def detectBOW():
+    import time
+    start = time.time()
+    time.clock()
+    elapsed = 0
+    seconds = 20  # 20 S.
     clf, classes_names, stdSlr, k, voc = joblib.load("train.pkl")
     print "Ready!! Yessss"
-    # cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(1)
     x = y = xh = yh = 1
     font = cv2.FONT_HERSHEY_SCRIPT_COMPLEX
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
             ret = True
             while (ret):
-                # ret, image_np = cap.read()
-                image_np = get_video()
+                elapsed = int(time.time() - start)
+                ret, image_np = cap.read()
+                #image_np = get_video()
                 image_np_expanded = np.expand_dims(image_np, axis=0)
                 image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
                 boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
@@ -188,6 +194,9 @@ def detectBOW():
                     print('..')
 
                     # cv2.putText(image, prediction, pt, cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 2, [0, 255, 0], 2)
+                if (elapsed >= seconds):
+                    cv2.destroyAllWindows()
+                    return str(predictions[0])
 
                 cv2.imshow('image', cv2.resize(image_np, (640, 480)))
                 if cv2.waitKey(25) & 0xFF == ord('q'):
@@ -204,7 +213,7 @@ def capture(namePath,obj_name):
     start = time.time()
     time.clock()
     elapsed = 0
-    seconds = 20  # 20 S.
+    seconds = 200  # 20 S.
     cap = cv2.VideoCapture(1)
     # Running the tensorflow session
     with detection_graph.as_default():
@@ -340,6 +349,8 @@ def save_model():
 ################################################### MAIN ##################################################
 
 JOB = True
+JOB_HowTo_Open = False
+STPindex = 0
 
 while True:
 
@@ -357,8 +368,7 @@ while True:
                     strDecode = decoder.hyp().hypstr
 
                     if strDecode != '':
-                        if JOB == True:
-                            print strDecode
+                        #print strDecode
                         # >>>>>>> END <<<<<<<<<<<<
                         if JOB == True and strDecode[-3:] == 'end' and strDecode[:9] == "this is a" :
                             JOB = False
@@ -378,22 +388,31 @@ while True:
                                 lenObj = int(lenDB("Corpus_Main.db", "SELECT * FROM obj_ALL"))  # count ROWs
                                 insert_object_Train(obj_name, int(lenObj + 1))  # check Found objects?
                             JOB = True
+                            save_model()
 
 
                         # >>>>>>> ARM <<<<<<<<<<<<
-                        elif STPindex == 0 and strDecode[:14] == 'this is how to' and strDecode[-4:] == "step":
+                        elif JOB ==True and strDecode[:14] == 'this is how to' and strDecode[-5:] == "start":
+                            JOB = False
+                            JOB_HowTo_Open = True
                             print "\n------------------------------------------"
                             print '\nStream decoding result:', strDecode
-                            STPindex = int(text2int(strDecode)) #i=3
-                            STPname = get_TrainArm(strDecode)  # grab ball
+
+                            STPname = get_TrainArm(strDecode)  # grab a ball
                             #insert table
                             print("SAVE NAME TO Table Main_action")
 
 
-                        elif STPindex > 0 and strDecode == 'call back step':
+                        elif JOB_HowTo_Open == True and strDecode == 'call back step':
                             print 'Stream decoding result:', strDecode
-                            STPindex -= 1
+                            STPindex +=1
                             print STPindex, " : ", STPname
+                            #SAVE Action
+                        elif JOB_HowTo_Open == True and strDecode == 'stop call back':
+                            JOB = True
+                            JOB_HowTo_Open = False
+                            STPindex = 0
+                            print "STOP.."
 
                         # >>>>>>> JERRY <<<<<<<<<<<<
                         elif strDecode[:5] == 'jerry':
@@ -416,6 +435,12 @@ while True:
                                 print "Yes , I know!"
                             else: print "No , I don't know!"
                             JOB = True
+                        elif JOB == True and strDecode[:22]== 'hey jerry what is that':
+                            print "\n------------------------------------------"
+                            print '\nStream decoding result:', strDecode
+                            obj_detect = detectBOW()
+                            print "That is a ",obj_detect
+
 
                 except AttributeError:
                     pass
