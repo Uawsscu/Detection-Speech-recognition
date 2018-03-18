@@ -339,7 +339,7 @@ def save_model():
 
 ################################################### MAIN ##################################################
 
-
+JOB = True
 
 while True:
 
@@ -357,9 +357,11 @@ while True:
                     strDecode = decoder.hyp().hypstr
 
                     if strDecode != '':
-                        print strDecode
+                        if JOB == True:
+                            print strDecode
                         # >>>>>>> END <<<<<<<<<<<<
-                        if strDecode[-3:] == 'end' and strDecode[:9] == "this is a" :
+                        if JOB == True and strDecode[-3:] == 'end' and strDecode[:9] == "this is a" :
+                            JOB = False
                             print "\n------------------------------------------"
                             print '\nStream decoding result:', strDecode
 
@@ -375,6 +377,7 @@ while True:
                                 capture(p,obj_name)  #capture image for train >> SAVE IMAGE
                                 lenObj = int(lenDB("Corpus_Main.db", "SELECT * FROM obj_ALL"))  # count ROWs
                                 insert_object_Train(obj_name, int(lenObj + 1))  # check Found objects?
+                            JOB = True
 
 
                         # >>>>>>> ARM <<<<<<<<<<<<
@@ -401,7 +404,8 @@ while True:
 
 
                         # >>>>>>> PASS DO YOU KNOW~??? <<<<<<<<<<<<
-                        elif strDecode[:11] == 'do you know':
+                        elif JOB == True and strDecode[:11] == 'do you know':
+                            JOB = False
                             print "\n------------------------------------------"
                             print '\nStream decoding result:', strDecode
                             obj_name = get_object_question(strDecode)
@@ -411,6 +415,7 @@ while True:
                             if obj_find != "None":
                                 print "Yes , I know!"
                             else: print "No , I don't know!"
+                            JOB = True
 
                 except AttributeError:
                     pass
