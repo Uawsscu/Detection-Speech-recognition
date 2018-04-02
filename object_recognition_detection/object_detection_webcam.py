@@ -39,76 +39,86 @@ import cv2
 
 
 
+#################################### CAP IMAGE ###############################################
 
 
-def capture():
+def capture(namePath,obj_name):
+    print "CAPPP"
+    import time
+    start = time.time()
+    time.clock()
+    elapsed = 0
+    seconds = 200  # 20 S.
     cap = cv2.VideoCapture(1)
     # Running the tensorflow session
     with detection_graph.as_default():
-      with tf.Session(graph=detection_graph) as sess:
-       ret = True
-       while (ret):
-          ret,image_np = cap.read()
-          image_np_expanded = np.expand_dims(image_np, axis=0)
-          image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
-          boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
-          scores = detection_graph.get_tensor_by_name('detection_scores:0')
-          classes = detection_graph.get_tensor_by_name('detection_classes:0')
-          num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+        with tf.Session(graph=detection_graph) as sess:
+            ret = True
+            while (ret):
+                ret, image_np = cap.read()
+                image_np_expanded = np.expand_dims(image_np, axis=0)
+                image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+                boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+                scores = detection_graph.get_tensor_by_name('detection_scores:0')
+                classes = detection_graph.get_tensor_by_name('detection_classes:0')
+                num_detections = detection_graph.get_tensor_by_name('num_detections:0')
 
-          (boxes, scores, classes, num_detections) = sess.run(
-              [boxes, scores, classes, num_detections],
-              feed_dict={image_tensor: image_np_expanded})
-          elapsed = int(time.time() - start)
-          print "EP : ", elapsed
+                (boxes, scores, classes, num_detections) = sess.run(
+                    [boxes, scores, classes, num_detections],
+                    feed_dict={image_tensor: image_np_expanded})
+                elapsed = int(time.time() - start)
+                print "EP : ", elapsed
 
-          # Visualization of the results of a detection.
-          vis_util.visualize_boxes_and_labels_on_image_array("CHECK",
-                                                             image_np,
-                                                             np.squeeze(boxes),
-                                                             np.squeeze(classes).astype(np.int32),
-                                                             np.squeeze(scores),
-                                                             category_index,
-                                                             use_normalized_coordinates=True,
-                                                             line_thickness=8)
+                # Visualization of the results of a detection.
+                vis_util.visualize_boxes_and_labels_on_image_array(image_np,
+                                                                   np.squeeze(boxes),
+                                                                   np.squeeze(classes).astype(np.int32),
+                                                                   np.squeeze(scores),
+                                                                   category_index,
+                                                                   use_normalized_coordinates=True,
+                                                                   line_thickness=8)
 
-          cv2.imshow('image', cv2.resize(image_np, (640, 480)))
+                cv2.imshow('image', cv2.resize(image_np, (640, 480)))
 
-          if (elapsed % 10 == 0):
+                if (elapsed % 10 == 0):
 
-             try :
-                 y = int(vis_util.f.getYmin() * 479.000)
-                 yh = int(vis_util.f.getYmax() * 479.000)
-                 x = int(vis_util.f.getXmin() * 639.000)
-                 xh = int(vis_util.f.getXmax() * 639.000)
-                 print y, " ", yh, " ", x, " ", xh
-                 cv2.imshow('RGB image', image_np)
+                    try:
+                        y = int(vis_util.f.getYmin() * 479.000)
+                        yh = int(vis_util.f.getYmax() * 479.000)
+                        x = int(vis_util.f.getXmin() * 639.000)
+                        xh = int(vis_util.f.getXmax() * 639.000)
+                        print y, " ", yh, " ", x, " ", xh
+                        cv2.imshow('RGB image', image_np)
 
-                 params = list()
-                 # 143 : 869 // 354 :588
-                 # 120:420, 213:456
-                 crop_img = image_np[y:yh, x:xh]
+                        params = list()
+                        # 143 : 869 // 354 :588
+                        # 120:420, 213:456
+                        crop_img = image_np[y:yh, x:xh]
 
-                 cv2.imwrite(
-                     "/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/dall" + str(
-                         elapsed) + ".jpg",
-                     crop_img, params)
-                 print "OK cap"
-                 cv2.destroyAllWindows()
-             except :
-                 print "no image PASS"
+                        cv2.imwrite(namePath + obj_name + str(
+                            elapsed / 10) + ".jpg",
+                                    crop_img, params)
+                        print "OK cap"
+                        cv2.destroyAllWindows()
+                    except:
+                        print "no image PASS"
 
-          if (elapsed >= seconds):
-              break
+                if (elapsed >= seconds):
+                    cv2.destroyAllWindows()
+                    break
 
-          if cv2.waitKey(25) & 0xFF == ord('q'):
-              cv2.destroyAllWindows()
-              break
+                if cv2.waitKey(25) & 0xFF == ord('q'):
+                    cv2.destroyAllWindows()
+                    break
+    cap.release()
+    cv2.destroyAllWindows()
 
 
+########################################################################################################
 def detectBOW():
 
     cap = cv2.VideoCapture(1)
+    vis_util.f.setPredic("")
 
     with detection_graph.as_default():
       with tf.Session(graph=detection_graph) as sess:
@@ -124,8 +134,7 @@ def detectBOW():
           (boxes, scores, classes, num_detections) = sess.run(
               [boxes, scores, classes, num_detections],
               feed_dict={image_tensor: image_np_expanded})
-          vis_util.visualize_boxes_and_labels_on_image_array("CHECK",
-                                                             image_np,
+          vis_util.visualize_boxes_and_labels_on_image_array(image_np,
                                                              np.squeeze(boxes),
                                                              np.squeeze(classes).astype(np.int32),
                                                              np.squeeze(scores),
@@ -134,8 +143,14 @@ def detectBOW():
                                                              line_thickness=8)
 
           cv2.imshow('image', cv2.resize(image_np, (640, 480)))
+          st = vis_util.f.getPredic()
+          objName = st.split("#")[0]
+          print objName
+
+
           if cv2.waitKey(25) & 0xFF == ord('q'):
               cv2.destroyAllWindows()
               break
 
 detectBOW()
+
