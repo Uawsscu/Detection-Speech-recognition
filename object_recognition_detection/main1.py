@@ -126,7 +126,7 @@ def detectBOW():
     seconds = 20  # 20 S.
     clf, classes_names, stdSlr, k, voc = joblib.load("train.pkl")
     print "Ready!! Yessss"
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     x = y = xh = yh = 1
     font = cv2.FONT_HERSHEY_SCRIPT_COMPLEX
     with detection_graph.as_default():
@@ -207,14 +207,14 @@ def detectBOW():
 #################################### CAP IMAGE ###############################################
 
 
-def capture(namePath,obj_name):
+def capture(namePath,obj_name,count):
     print "CAPPP"
     import time
     start = time.time()
     time.clock()
     elapsed = 0
     seconds = 200  # 20 S.
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     # Running the tensorflow session
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
@@ -235,7 +235,7 @@ def capture(namePath,obj_name):
                 print "EP : ", elapsed
 
                 # Visualization of the results of a detection.
-                vis_util.visualize_boxes_and_labels_on_image_array(image_np,
+                vis_util.visualize_boxes_and_labels_on_image_array2(image_np,
                                                                    np.squeeze(boxes),
                                                                    np.squeeze(classes).astype(np.int32),
                                                                    np.squeeze(scores),
@@ -260,7 +260,7 @@ def capture(namePath,obj_name):
                         # 120:420, 213:456
                         crop_img = image_np[y:yh, x:xh]
 
-                        cv2.imwrite(namePath + obj_name + str(
+                        cv2.imwrite(namePath + obj_name + str(count) + "_" + str(
                             elapsed / 10) + ".jpg",
                                     crop_img, params)
                         print "OK cap"
@@ -347,107 +347,119 @@ def save_model():
 
 
 ################################################### MAIN ##################################################
+def main() :
+    JOB = True
+    JOB_HowTo_Open = False
+    STPindex = 0
 
-JOB = True
-JOB_HowTo_Open = False
-STPindex = 0
+    while True:
 
-while True:
+        buf = stream.read(1024)
+        if buf:
+            decoder.process_raw(buf, False, False)
 
-    buf = stream.read(1024)
-    if buf:
-        decoder.process_raw(buf, False, False)
+            if decoder.get_in_speech() != in_speech_bf:
+                in_speech_bf = decoder.get_in_speech()
+                if not in_speech_bf:
+                    decoder.end_utt()
 
-        if decoder.get_in_speech() != in_speech_bf:
-            in_speech_bf = decoder.get_in_speech()
-            if not in_speech_bf:
-                decoder.end_utt()
+                    try:
+                        strDecode = decoder.hyp().hypstr
 
+                        if strDecode != '':
+                            print strDecode
+                            # >>>>>>> END <<<<<<<<<<<<
+                            if JOB == True and strDecode[-3:] == 'end' and strDecode[:9] == "this is a":
+                                JOB = False
+                                print "\n------------------------------------------"
+                                print '\nStream decoding result:', strDecode
 
-                try:
-                    strDecode = decoder.hyp().hypstr
+                                obj_name = get_object_train(strDecode)  # sentence to word
+                                print "Speech : ", obj_name
+                                # create folder
+                                dataset_Path = r'/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/' + obj_name
+                                p = "/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/" + obj_name + "/"
 
-                    if strDecode != '':
-                        #print strDecode
-                        # >>>>>>> END <<<<<<<<<<<<
-                        if JOB == True and strDecode[-3:] == 'end' and strDecode[:9] == "this is a" :
-                            JOB = False
-                            print "\n------------------------------------------"
-                            print '\nStream decoding result:', strDecode
+                                if not os.path.exists(dataset_Path):
+                                    print "New Data"
+                                    os.makedirs(dataset_Path)
+                                    capture(p, obj_name, 1)  # capture image for train >> SAVE IMAGE
+                                    lenObj = int(lenDB("Corpus_Main.db", "SELECT * FROM obj_ALL2"))  # count ROWs
+                                    insert_object_Train(obj_name, int(lenObj + 1))  # check Found objects?
+                                else:
+                                    count = int(search_object_Train2(obj_detect))
+                                    capture(p, obj_name, count + 1)  ####cap2
+                                    update_object_Train2(count + 1, obj_name)  # UPDATE COUNT++
 
-                            obj_name = get_object_train(strDecode)  # sentence to word
-                            print "Speech : ", obj_name
-                            # create folder
-                            dataset_Path = r'/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/' + obj_name
-                            p="/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/"+ obj_name+"/"
-
-                            if not os.path.exists(dataset_Path):
-                                print dataset_Path
-                                os.makedirs(dataset_Path)
-                                capture(p,obj_name)  #capture image for train >> SAVE IMAGE
-                                lenObj = int(lenDB("Corpus_Main.db", "SELECT * FROM obj_ALL"))  # count ROWs
-                                insert_object_Train(obj_name, int(lenObj + 1))  # check Found objects?
-                            JOB = True
-                            save_model()
-
-
-                        # >>>>>>> ARM <<<<<<<<<<<<
-                        elif JOB ==True and strDecode[:14] == 'this is how to' and strDecode[-5:] == "start":
-                            JOB = False
-                            JOB_HowTo_Open = True
-                            print "\n------------------------------------------"
-                            print '\nStream decoding result:', strDecode
-
-                            STPname = get_TrainArm(strDecode)  # grab a ball
-                            #insert table
-                            print("SAVE NAME TO Table Main_action")
+                                JOB = True
+                                save_model()
 
 
-                        elif JOB_HowTo_Open == True and strDecode == 'call back step':
-                            print 'Stream decoding result:', strDecode
-                            STPindex +=1
-                            print STPindex, " : ", STPname
-                            #SAVE Action
-                        elif JOB_HowTo_Open == True and strDecode == 'stop call back':
-                            JOB = True
-                            JOB_HowTo_Open = False
-                            STPindex = 0
-                            print "STOP.."
+                            # >>>>>>> ARM <<<<<<<<<<<<
+                            elif JOB == True and strDecode[:14] == 'this is how to' and strDecode[-5:] == "start":
+                                JOB = False
+                                JOB_HowTo_Open = True
+                                print "\n------------------------------------------"
+                                print '\nStream decoding result:', strDecode
 
-                        # >>>>>>> JERRY <<<<<<<<<<<<
-                        elif strDecode[:5] == 'jerry':
-                            print "\n------------------------------------------"
-                            print '\nStream decoding result:', strDecode
-                            print get_object_command(strDecode)#
-                            #corpus_Arm
+                                STPname = get_TrainArm(strDecode)  # grab a ball
+                                # insert table
+                                print("SAVE NAME TO Table Main_action")
 
 
-                        # >>>>>>> PASS DO YOU KNOW~??? <<<<<<<<<<<<
-                        elif JOB == True and strDecode[:11] == 'do you know':
-                            JOB = False
-                            print "\n------------------------------------------"
-                            print '\nStream decoding result:', strDecode
-                            obj_name = get_object_question(strDecode)
-                            print(obj_name)
-                            obj_find = search_object_Train(obj_name)
+                            elif JOB_HowTo_Open == True and strDecode == 'call back step':
+                                print 'Stream decoding result:', strDecode
+                                STPindex += 1
+                                print STPindex, " : ", STPname
+                                # SAVE Action
+                            elif JOB_HowTo_Open == True and strDecode == 'stop call back':
+                                JOB = True
+                                JOB_HowTo_Open = False
+                                STPindex = 0
+                                print "STOP.."
 
-                            if obj_find != "None":
-                                print "Yes , I know!"
-                            else: print "No , I don't know!"
-                            JOB = True
-                        elif JOB == True and strDecode[:22]== 'hey jerry what is that':
-                            print "\n------------------------------------------"
-                            print '\nStream decoding result:', strDecode
-                            obj_detect = detectBOW()
-                            print "That is a ",obj_detect
+                            # >>>>>>> JERRY <<<<<<<<<<<<
+                            elif strDecode[:5] == 'jerry':
+                                print "\n------------------------------------------"
+                                print '\nStream decoding result:', strDecode
+                                print get_object_command(strDecode)  #
+                                # corpus_Arm
 
 
-                except AttributeError:
-                    pass
-                decoder.start_utt()
-    else:
-        break
-decoder.end_utt()
-print('An Error occured :', decoder.hyp().hypstr)
+                            # >>>>>>> PASS DO YOU KNOW~??? <<<<<<<<<<<<
+                            elif JOB == True and strDecode[:11] == 'do you know':
+                                JOB = False
+                                print "\n------------------------------------------"
+                                print '\nStream decoding result:', strDecode
+                                obj_name = get_object_question(strDecode)
+                                print(obj_name)
+                                obj_find = search_object_Train(obj_name)
 
-print "OK"
+                                if obj_find != "None":
+                                    print "Yes , I know!"
+                                else:
+                                    print "No , I don't know!"
+                                JOB = True
+                            elif JOB == True and strDecode[:22] == 'hey jerry what is that':
+                                print "\n------------------------------------------"
+                                print '\nStream decoding result:', strDecode
+                                obj_detect = detectBOW()
+                                print "That is a ", obj_detect
+
+
+                    except AttributeError:
+                        pass
+                    decoder.start_utt()
+        else:
+            break
+    decoder.end_utt()
+    print('An Error occured :', decoder.hyp().hypstr)
+
+    print "OK"
+
+def test2() :
+    obj_name = "bottle"
+    p = "/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/" + obj_name + "/"
+    capture(p, obj_name, 2)
+
+save_model()

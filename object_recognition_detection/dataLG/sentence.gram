@@ -6,18 +6,18 @@
 
 grammar sentence;
 
-public <move> =  <obj> | turn off | merry one | <train> | <b> | move to left | [hi][jerry] <command> | <question> | [test][is] <control> |call [back][step]| [stop] call [back]|<what>;
+public <move> =  [this is] <train> |merry one | <b> | <control> | move to left | [jerry] <command> | <question>  |call [back] step| [stop] call [back]|<what>;
 
-<control> = [this][is][ how][ to] | [this][is][ how][ to] <verb> <obj> [start] |[this][is][ how][ to] <verb> <color><obj> [start] ;
+<control> = [this is] how to <verb> a <obj> | [this is][how to] <verb> a <color><obj> ;
 
-<train> =  this is [a] <obj> [end] | this is [a] <color><obj> [end];
-<command> =  <verb> <color><obj> | <etc> ;
+<train> =   [a] <obj> [end] | [a] <color><obj> end;
+<command> =  <verb> a <obj>|<verb> a <color><obj> | <etc> ;
 <question> = [do] [you] [know] a <obj> | [do] [you] [know] a <color><obj> ;
 <what> = [hey][jerry] [what] [is that];
 
 
-<color> = [green] | [red] | [blue] | [brown] | [black] | [orange] | [pink] ;
-<obj> =  sports ball | glass  | remote | cup | tv | teddy | bottle | green bottle;
+<color> = [green] | [blue] ;
+<obj> =  ball | glass  | remote | cup | teddy | bottle | green bottle | blue box ;
 <verb> = grab | touch | pick ;
 <number> = one | two | three | five | four ;
 <etc> = move the <obj> to the left | right ;
