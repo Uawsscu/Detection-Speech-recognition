@@ -10,7 +10,7 @@ from sklearn.externals import joblib
 from scipy.cluster.vq import *
 from sklearn.preprocessing import StandardScaler
 
-train_path = "/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/dataset/train"
+train_path = "/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic"
 
 training_names = os.listdir(train_path)
 

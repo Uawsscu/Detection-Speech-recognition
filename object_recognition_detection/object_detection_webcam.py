@@ -162,7 +162,7 @@ def detectBOW():
 
 def detectBOW2():
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     vis_util.f.setPredic("")
 
     with detection_graph.as_default():
@@ -189,11 +189,24 @@ def detectBOW2():
 
           cv2.imshow('image', cv2.resize(image_np, (640, 480)))
           st = vis_util.f.getPredic()
-          objName = st.split("#")[0]
-          print st
+          st = st.split("#")
+          objName = st[0]
+          st2 = st[1].split(",")
+          Xmax = st2[3]
+          Xmin = st2[2]
+          st3 = objName + "," + Xmin + "," + Xmax
+
+
+          elapsed = int(time.time() - start)
+
+          cv2.imshow('image', cv2.resize(image_np, (640, 480)))
+          st = vis_util.f.getPredic()
+          if (elapsed >= seconds):
+              return st3
+              cv2.destroyAllWindows()
 
           if cv2.waitKey(25) & 0xFF == ord('q'):
               cv2.destroyAllWindows()
               break
 
-detectBOW2()
+print detectBOW2()

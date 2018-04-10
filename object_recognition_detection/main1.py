@@ -214,7 +214,7 @@ def capture(namePath,obj_name,count):
     time.clock()
     elapsed = 0
     seconds = 200  # 20 S.
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     # Running the tensorflow session
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
@@ -284,7 +284,10 @@ def capture(namePath,obj_name,count):
 
 def save_model():
     train_path = "/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic"
+
+
     training_names = os.listdir(train_path)
+
     image_paths = []
     image_classes = []  ## 00000,111111,2222,33333
     class_id = 0
@@ -312,12 +315,15 @@ def save_model():
         kpts, des = des_ext.compute(im, kpts)
         des_list.append((image_path, des))
 
-    # Stack all the descriptors vertically in a numpy array
+        # Stack all the descriptors vertically in a numpy array
     descriptors = des_list[0][1]
     for image_path, descriptor in des_list[1:]:
-        descriptors = np.vstack((descriptors, descriptor))
+        try :
+            descriptors = np.vstack((descriptors, descriptor))
+        except :
+            pass
 
-    # Perform k-means clustering
+        # Perform k-means clustering
     k = 100
     voc, variance = kmeans(descriptors, k, 1)
 
@@ -343,7 +349,7 @@ def save_model():
     # Save the SVM
 
     joblib.dump((clf, training_names, stdSlr, k, voc), "train.pkl", compress=3)
-    print "SAVE MODEL"
+    print "SAVE Model"
 
 
 ################################################### MAIN ##################################################
@@ -458,8 +464,8 @@ def main() :
     print "OK"
 
 def test2() :
-    obj_name = "bottle"
+    obj_name = "teddy"
     p = "/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/" + obj_name + "/"
     capture(p, obj_name, 2)
-
+#test2()
 save_model()
