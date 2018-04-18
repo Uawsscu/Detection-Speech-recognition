@@ -359,11 +359,9 @@ def main() :
     STPindex = 0
 
     while True:
-
         buf = stream.read(1024)
         if buf:
             decoder.process_raw(buf, False, False)
-
             if decoder.get_in_speech() != in_speech_bf:
                 in_speech_bf = decoder.get_in_speech()
                 if not in_speech_bf:
@@ -371,7 +369,6 @@ def main() :
 
                     try:
                         strDecode = decoder.hyp().hypstr
-
                         if strDecode != '':
                             print strDecode
                             # >>>>>>> END <<<<<<<<<<<<
@@ -456,6 +453,8 @@ def main() :
                     except AttributeError:
                         pass
                     decoder.start_utt()
+
+
         else:
             break
     decoder.end_utt()
@@ -468,4 +467,111 @@ def test2() :
     p = "/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/" + obj_name + "/"
     capture(p, obj_name, 2)
 #test2()
-save_model()
+#save_model()
+JOB = True
+JOB_HowTo_Open = False
+STPindex = 0
+
+while True:
+    buf = stream.read(1024)
+    if buf:
+        decoder.process_raw(buf, False, False)
+        if decoder.get_in_speech() != in_speech_bf:
+            in_speech_bf = decoder.get_in_speech()
+            if not in_speech_bf:
+                decoder.end_utt()
+
+                try:
+                    strDecode = decoder.hyp().hypstr
+                    if strDecode != '':
+                        print strDecode
+                            # >>>>>>> END <<<<<<<<<<<<
+                        if JOB == True and strDecode[-3:] == 'end' and strDecode[:9] == "this is a":
+                            JOB = False
+                            print "\n------------------------------------------"
+                            print '\nStream decoding result:', strDecode
+
+                            obj_name = get_object_train(strDecode)  # sentence to word
+                            print "Speech : ", obj_name
+                                # create folder
+                            dataset_Path = r'/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/' + obj_name
+                            p = "/home/uawsscu/PycharmProjects/Pass1/object_recognition_detection/pic/" + obj_name + "/"
+
+                            if not os.path.exists(dataset_Path):
+                                print "New Data"
+                                os.makedirs(dataset_Path)
+                                capture(p, obj_name, 1)  # capture image for train >> SAVE IMAGE
+                                lenObj = int(lenDB("Corpus_Main.db", "SELECT * FROM obj_ALL2"))  # count ROWs
+                                insert_object_Train(obj_name, int(lenObj + 1))  # check Found objects?
+                            else:
+                                count = int(search_object_Train2(obj_name))
+                                capture(p, obj_name, count + 1)  ####cap2
+                                update_object_Train2(count + 1, obj_name)  # UPDATE COUNT++
+
+                            JOB = True
+                            save_model()
+
+
+                            # >>>>>>> ARM <<<<<<<<<<<<
+                        elif JOB == True and strDecode[:14] == 'this is how to' and strDecode[-5:] == "start":
+                            JOB = False
+                            JOB_HowTo_Open = True
+                            print "\n------------------------------------------"
+                            print '\nStream decoding result:', strDecode
+
+                            STPname = get_TrainArm(strDecode)  # grab a ball
+                            # insert table
+                            print("SAVE NAME TO Table Main_action")
+
+
+                        elif JOB_HowTo_Open == True and strDecode == 'call back step':
+                            print 'Stream decoding result:', strDecode
+                            STPindex += 1
+                            print STPindex, " : ", STPname
+                                # SAVE Action
+                        elif JOB_HowTo_Open == True and strDecode == 'stop call back':
+                            JOB = True
+                            JOB_HowTo_Open = False
+                            STPindex = 0
+                            print "STOP.."
+
+                        # >>>>>>> JERRY <<<<<<<<<<<<
+                        elif strDecode[:5] == 'jerry':
+                            print "\n------------------------------------------"
+                            print '\nStream decoding result:', strDecode
+                            print get_object_command(strDecode)  #
+                            # corpus_Arm
+
+
+                        # >>>>>>> PASS DO YOU KNOW~??? <<<<<<<<<<<<
+                        elif JOB == True and strDecode[:11] == 'do you know':
+                            JOB = False
+                            print "\n------------------------------------------"
+                            print '\nStream decoding result:', strDecode
+                            obj_name = get_object_question(strDecode)
+                            print(obj_name)
+                            obj_find = search_object_Train(obj_name)
+
+                            if obj_find != "None":
+                                print "Yes , I know!"
+                            else:
+                                print "No , I don't know!"
+                            JOB = True
+                        elif JOB == True and strDecode[:22] == 'hey jerry what is that':
+                            print "\n------------------------------------------"
+                            print '\nStream decoding result:', strDecode
+                            obj_detect = detectBOW()
+                            print "That is a ", obj_detect
+
+
+                except AttributeError:
+                    pass
+                decoder.start_utt()
+
+
+    else:
+        break
+decoder.end_utt()
+print('An Error occured :', decoder.hyp().hypstr)
+
+print "OK"

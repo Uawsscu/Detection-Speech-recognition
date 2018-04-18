@@ -60,6 +60,7 @@ def update_object_Train2(count,name):
     with sqlite3.connect("Corpus_Main.db") as con:
         cur = con.cursor()
         #cur.execute('SELECT * FROM object_Train WHERE name=?',(name,))
+        cur.execute("UPDATE obj_ALL2 SET count=? WHERE name = ?", (count, name))
         try :
             cur.execute("UPDATE obj_ALL2 SET count=? WHERE name = ?", (count, name))
             con.commit()
@@ -135,7 +136,6 @@ if __name__ == '__main__':
     A= "ball"
     #print lenObj
     #print insertObj_NameNum(A,lenObj)   #/// DUPLICATE or NONE
-
 print search_object_Train("Ball")
 insert_Buff_Detect("ball")
 remove_Buff_Detect(1)
@@ -149,5 +149,5 @@ remove_Buff_Detect(1)
 #insert_object_Train("teddy", int(lenObj+1))
 #create_Table("Corpus_Main.db","'''CREATE TABLE obj_ALL(name varchar(50) ,ID INTEGER primary key ,)'''")
 #print search_object_Train2("teddy")
-#update_object_Train2(1,"ball")
+update_object_Train2(2,"ball")
 #delete_task(7)
