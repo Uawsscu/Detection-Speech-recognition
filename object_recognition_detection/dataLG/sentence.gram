@@ -6,7 +6,7 @@
 
 grammar sentence;
 
-public <move> =  [this is] <train> |merry one | <b> | <control> | move to left | [jerry] <command> | <question>  |call [back] step| [stop] call [back]|<what>;
+public <move> =  [this is] <train> |merry one | <b> | <control>|[save] [model] | move to left | [jerry] <command> | <question>  | [next] [step]|break|<what>;
 
 <control> = [this is] how to <verb> a <obj> | [this is][how to] <verb> a <color><obj> ;
 

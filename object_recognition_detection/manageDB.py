@@ -1,15 +1,16 @@
 #Python 2.7 /usr/bin/python2.7
 import sqlite3
-def create_Table(nameDB,exeText):
-    con = sqlite3.connect(nameDB)
+DBNAME = 'Test_PJ2.db'
+def create_Table():
+    con = sqlite3.connect(DBNAME)
     c = con.cursor()
     #c.execute(exeText)
-    c.execute('''CREATE TABLE obj_ALL2(name varchar(50) primary key ,ID INTEGER,count INTEGER)''')
+    c.execute('''CREATE TABLE obj_ALL2(ID INTEGER,name varchar(50) primary key ,count INTEGER)''')
 
 #>>>>>>>>>>>>>> INSERT Obj Train <<<<<<<<<<<<<<<<
 
 def insert_object_Train(name,lenID):
-    with sqlite3.connect("Corpus_Main.db") as con:
+    with sqlite3.connect(DBNAME) as con:
         try :
             con.execute("insert into obj_ALL values (?, ?)", (name, lenID)) #nameObj,ID = {PK}
             print "ADD Object to Table obj_ALL : ", name," : ",lenID
@@ -30,7 +31,7 @@ def lenDB(nameDB,exeText):
 #>>>>>>>>>>>>> search obj TRAIN <<<<<<<<<<<<<<<<<<
 
 def search_object_Train(name):
-    with sqlite3.connect("Corpus_Main.db") as con:
+    with sqlite3.connect(DBNAME) as con:
         cur = con.cursor()
         #cur.execute('SELECT * FROM object_Train WHERE name=?',(name,))
         try :
@@ -43,7 +44,7 @@ def search_object_Train(name):
        #return cur.fetchone() # None OR (u'Ball', 2)
 
 def search_object_Train2(name):
-    with sqlite3.connect("Corpus_Main.db") as con:
+    with sqlite3.connect(DBNAME) as con:
         cur = con.cursor()
         #cur.execute('SELECT * FROM object_Train WHERE name=?',(name,))
         try :
@@ -57,7 +58,7 @@ def search_object_Train2(name):
 
 #>>>>>>>>>>>>>>>>> UPDATE <<<<<<<<<<<<<<<<<<<<<<<<<<<<
 def update_object_Train2(count,name):
-    with sqlite3.connect("Corpus_Main.db") as con:
+    with sqlite3.connect(DBNAME) as con:
         cur = con.cursor()
         #cur.execute('SELECT * FROM object_Train WHERE name=?',(name,))
         cur.execute("UPDATE obj_ALL2 SET count=? WHERE name = ?", (count, name))
@@ -70,7 +71,7 @@ def update_object_Train2(count,name):
 
 #>>>>>>>>>>>>>>>insert BUFF DETECT <<<<<<<<<<<<<
 def insert_Buff_Detect(name):
-    with sqlite3.connect("Corpus_Main.db") as con:
+    with sqlite3.connect(DBNAME ) as con:
         try :
             con.execute("insert into Buff_Detect values (?, ?)", (name, 1)) #nameObj,ID = {PK}
         except :
@@ -80,7 +81,7 @@ def insert_Buff_Detect(name):
 
 #>>>>>>>>>>>>>>>remove BUFF DETECT <<<<<<<<<<<<<
 def remove_Buff_Detect(id):
-    with sqlite3.connect("Corpus_Main.db") as con:
+    with sqlite3.connect(DBNAME ) as con:
         try :
            # con.execute('DELETE FROM Zoznam WHERE Name=?', (data,))
             con.execute("DELETE FROM Buff_Detect WHERE ID=?", (id,))
@@ -91,7 +92,7 @@ def remove_Buff_Detect(id):
 #>>>>>>>>>>>>> search Buff <<<<<<<<<<<<<<<<<<
 def search_Buff_Detect(id):
     try :
-        with sqlite3.connect("Corpus_Main.db") as con:
+        with sqlite3.connect(DBNAME ) as con:
             cur = con.cursor()
             cur.execute("SELECT name FROM buff_detect WHERE ID=?", (id,))
             rows = cur.fetchone()
@@ -103,7 +104,7 @@ def search_Buff_Detect(id):
 ############################# DROP ROW ############################################
 def delete_task(id):
     try :
-        with sqlite3.connect("Corpus_Main.db") as con:
+        with sqlite3.connect(DBNAME ) as con:
             cur = con.cursor()
             cur.execute("DELETE FROM obj_ALL WHERE ID=?", (id,))
     except :
@@ -111,23 +112,7 @@ def delete_task(id):
 #delete_task(7)
 
 #####################################################################################
-#>>>>>>>>>>>>>>>>JSON<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-import pyodbc
-import json
-import collections
 
-def Jtest():
-    connection = sqlite3.connect('Corpus_Main.db')
-    cursor = connection.cursor()
-    query = "SELECT * FROM object_Train"
-    result = cursor.execute(query)
-
-    items2 = [dict(zip([key[0] for key in cursor.description], row)) for row in result]
-    print (json.dumps({'items2': items2}))
-
-    with open('JsonObj1.json', 'w') as outfile:
-        json.dump(items2, outfile)
-    # Convert query to objects of key-value pairs
 """
 if __name__ == '__main__':
     #create_1()
@@ -147,7 +132,7 @@ remove_Buff_Detect(1)
 #lenObj = int(lenDB("Corpus_Main.db", "SELECT * FROM obj_ALL"))
 #print lenObj
 #insert_object_Train("teddy", int(lenObj+1))
-#create_Table("Corpus_Main.db","'''CREATE TABLE obj_ALL(name varchar(50) ,ID INTEGER primary key ,)'''")
+#create_Table("Test_PJ2.db","'''CREATE TABLE obj_ALL(name varchar(50) ,ID INTEGER primary key ,)'''")
 #print search_object_Train2("teddy")
-update_object_Train2(2,"ball")
+update_object_Train2(10,"ball1")
 #delete_task(7)
